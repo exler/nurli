@@ -4,7 +4,10 @@
 *.sqlite3
 
 ### Visual Studio Code ###
-.vscode/*
+.vscode/
+
+### Node ###
+node_modules/
 
 ### Golang ###
 # Binaries for programs and plugins

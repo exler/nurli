@@ -24,7 +24,7 @@ var serveCmd = &cli.Command{
 
 		port := cCtx.Int("port")
 
-		serverConfig := server.Config{
+		serverConfig := server.ServerConfig{
 			DB:         db,
 			ServerPort: port,
 			Logger:     &logger,

@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"time"
 
@@ -10,14 +11,37 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type Config struct {
+type ServerConfig struct {
 	DB         database.Database
 	ServerPort int
 	Logger     *zerolog.Logger
 }
 
-func ServeApp(config Config) error {
+type ServerHandler struct {
+	Config ServerConfig
+
+	templates *template.Template
+}
+
+func ServeApp(config ServerConfig) error {
+	sh := ServerHandler{
+		Config: config,
+	}
+	err := sh.prepareTemplates()
+	if err != nil {
+		config.Logger.Fatal().Err(err).Msg("Error preparing templates")
+	}
+
+	fs := http.FileServer(http.Dir("./internal/static"))
+
 	router := chi.NewRouter()
+
+	router.Handle("/static/*", http.StripPrefix("/static/", fs))
+	router.Get("/", sh.IndexHandler)
+
+	router.Route("/api", func(r chi.Router) {
+		r.Get("/health", sh.HealthHandler)
+	})
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.ServerPort),

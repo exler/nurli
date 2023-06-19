@@ -1,0 +1,12 @@
+{
+  "name": "nurli",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "compile": "tailwindcss -i internal/static/css/_base.css -o internal/static/css/base.css",
+    "watch": "tailwindcss -i internal/static/css/_base.css -o internal/static/css/base.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.2"
+  }
+}

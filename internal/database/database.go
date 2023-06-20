@@ -1,12 +1,25 @@
 package database
 
-import "github.com/jmoiron/sqlx"
+import (
+	"context"
 
-// Interface for accessing and manipulating data in database.
-type Database interface {
-	Migrate() error
+	"github.com/jmoiron/sqlx"
+)
+
+type SQLiteDatabase struct {
+	sqlx.DB
 }
 
-type DatabaseBase struct {
-	sqlx.DB
+func OpenSQLiteDatabase(ctx context.Context, dbPath string) (sqliteDB *SQLiteDatabase, err error) {
+	db, err := sqlx.ConnectContext(ctx, "sqlite", dbPath)
+	if err != nil {
+		return nil, err
+	}
+
+	sqliteDB = &SQLiteDatabase{*db}
+	return sqliteDB, err
+}
+
+func (db *SQLiteDatabase) Migrate() error {
+	return nil
 }

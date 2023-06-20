@@ -17,7 +17,7 @@ var Cmd = &cli.App{
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "data-dir",
-			EnvVars: []string{"DATA_DIR"},
+			EnvVars: []string{"NURLI_DATA_DIR"},
 			Value:   "",
 		},
 	},
@@ -32,17 +32,10 @@ func Execute() error {
 	return Cmd.Run(os.Args)
 }
 
-func openDatabase(cCtx *cli.Context) (database.Database, error) {
-	switch dbms := cCtx.String("NURLI_DB_TYPE"); dbms {
-	default:
-		return openSQLiteDatabase(cCtx)
-	}
-}
-
-func openSQLiteDatabase(cCtx *cli.Context) (*database.SQLiteDatabase, error) {
+func openDatabase(cCtx *cli.Context) (*database.SQLiteDatabase, error) {
 	var dataDir string
 	var err error
-	if dataDir = cCtx.String("DATA_DIR"); dataDir == "" {
+	if dataDir = cCtx.String("data-dir"); dataDir == "" {
 		dataDir, err = os.Getwd()
 		if err != nil {
 			return nil, err

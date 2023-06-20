@@ -12,7 +12,7 @@ import (
 )
 
 type ServerConfig struct {
-	DB         database.Database
+	DB         *database.SQLiteDatabase
 	ServerPort int
 	Logger     *zerolog.Logger
 }

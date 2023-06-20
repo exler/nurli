@@ -3,13 +3,17 @@ package server
 import (
 	"html/template"
 	"net/http"
+
+	"github.com/exler/nurli/internal"
 )
 
 func (sh *ServerHandler) prepareTemplates() (err error) {
 	funcMap := template.FuncMap{}
 
-	sh.templates, err = template.New("").Funcs(funcMap).ParseGlob("./internal/templates/*.html")
-	return
+	// `templates/**/*.html` doesn't pick up the files in the `templates/` directory
+	// so we have to add the top directory to the patterns list.
+	sh.templates, err = template.New("").Funcs(funcMap).ParseFS(internal.TemplateFS, "templates/*.html", "templates/**/*.html")
+	return err
 }
 
 func (sh *ServerHandler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {

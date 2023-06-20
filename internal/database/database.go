@@ -2,16 +2,13 @@ package database
 
 import (
 	"context"
-	"embed"
 
+	"github.com/exler/nurli/internal"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
 )
-
-//go:embed migrations/*
-var migrations embed.FS
 
 type MigrationOptions struct {
 	// Migrate all the way down instead of up.
@@ -39,7 +36,7 @@ func OpenSQLiteDatabase(ctx context.Context, dbPath string) (sqliteDB *SQLiteDat
 }
 
 func (db *SQLiteDatabase) Migrate(options MigrationOptions) error {
-	sourceDriver, err := iofs.New(migrations, "migrations")
+	sourceDriver, err := iofs.New(internal.MigrationsFS, "database/migrations")
 	if err != nil {
 		return err
 	}

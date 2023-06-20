@@ -7,26 +7,9 @@
     
     <link rel="stylesheet" href="static/css/base.css">
 </head>
-<body class="bg-gray-100 text-gray-900">
-    <nav class="p-6 bg-white flex justify-between items-center">
-        <h1 class="font-bold text-2xl">Nurli</h1>
-        <div>
-            <button class="bg-blue-500 text-white px-4 py-2 rounded mr-2">Login</button>
-            <button class="bg-green-500 text-white px-4 py-2 rounded">Signup</button>
-        </div>
-    </nav>
-    <header class="bg-blue-500 text-white text-center py-20">
-        <h2 class="font-bold text-4xl mb-5">Welcome to Nurli, your personal bookmark manager</h2>
-        <p class="text-xl">Organize your digital life with Nurli</p>
-    </header>
-    <section class="p-6">
-        <h3 class="font-bold text-2xl mb-5">Features</h3>
-        <ul class="space-y-2">
-            <li><b>Easy Organization:</b> Sort your bookmarks into categories for easy access.</li>
-            <li><b>Sync Across Devices:</b> Access your bookmarks from any device with internet connection.</li>
-            <li><b>Share with Others:</b> Share your bookmarks with friends, family, or colleagues.</li>
-            <li><b>Privacy First:</b> Your bookmarks are private by default. You control who sees what.</li>
-        </ul>
-    </section>
+<body>
+    {{ template "menuPartial" }}
+    Template
+    {{ template "footerPartial" }}
 </body>
 </html>

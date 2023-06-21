@@ -8,6 +8,8 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/rs/zerolog v1.29.1
 	github.com/urfave/cli/v2 v2.25.5
+	golang.org/x/crypto v0.10.0
+	golang.org/x/term v0.9.0
 	modernc.org/sqlite v1.23.1
 )
 
@@ -25,7 +27,7 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/tools v0.9.1 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect
 	modernc.org/cc/v3 v3.40.0 // indirect

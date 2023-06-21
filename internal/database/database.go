@@ -2,12 +2,10 @@ package database
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/exler/nurli/internal"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/sqlite"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog"
 )
 
 type MigrationOptions struct {
@@ -35,30 +33,24 @@ func OpenSQLiteDatabase(ctx context.Context, dbPath string) (sqliteDB *SQLiteDat
 	return sqliteDB, err
 }
 
-func (db *SQLiteDatabase) Migrate(options MigrationOptions) error {
-	sourceDriver, err := iofs.New(internal.MigrationsFS, "database/migrations")
+func (db *SQLiteDatabase) withTx(ctx context.Context, fn func(tx *sqlx.Tx) error) error {
+	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
-	dbDriver, err := sqlite.WithInstance(db.DB.DB, &sqlite.Config{})
-	if err != nil {
-		return err
-	}
+	defer func() {
+		if err := tx.Commit(); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg(fmt.Sprintf("Error during commit: %s", err.Error()))
+		}
+	}()
 
-	migration, err := migrate.NewWithInstance("iofs", sourceDriver, "sqlite", dbDriver)
+	err = fn(tx)
 	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg(fmt.Sprintf("Error during rollback: %s", err.Error()))
+		}
 		return err
-	}
-
-	if options.Down {
-		err = migration.Down()
-	} else if options.Version > 0 && options.Force {
-		err = migration.Force(int(options.Version))
-	} else if options.Version > 0 {
-		err = migration.Migrate(options.Version)
-	} else {
-		err = migration.Up()
 	}
 
 	return err

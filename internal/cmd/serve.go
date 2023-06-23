@@ -25,12 +25,10 @@ var serveCmd = &cli.Command{
 		port := cCtx.Int("port")
 
 		serverConfig := server.ServerConfig{
-			DB:         db,
 			ServerPort: port,
-			Logger:     &logger,
 		}
 
-		err = server.ServeApp(serverConfig)
+		err = server.ServeApp(serverConfig, db, &logger)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("Error running server")
 		}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/exler/nurli/internal/cmd"
-	_ "modernc.org/sqlite"
 )
 
 func main() {

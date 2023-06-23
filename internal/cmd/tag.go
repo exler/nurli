@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/exler/nurli/internal/core"
+	"github.com/exler/nurli/internal/database"
 	"github.com/urfave/cli/v2"
 )
 
@@ -32,13 +32,12 @@ var (
 			fmt.Print("Name: ")
 			name := GetUserInput()
 
-			err = db.CreateTag(cCtx.Context, core.Tag{
+			db.Create(&database.Tag{
 				Name:    name,
 				OwnerID: userID,
 			})
-			if err != nil {
-				return err
-			}
+
+			fmt.Println("Tag created successfully")
 
 			return nil
 		},
@@ -53,10 +52,8 @@ var (
 				return err
 			}
 
-			tags, err := db.ListTags(cCtx.Context)
-			if err != nil {
-				return err
-			}
+			var tags []database.Tag
+			db.Find(&tags)
 
 			if len(tags) == 0 {
 				fmt.Println("No tags found")
@@ -83,10 +80,15 @@ var (
 				return err
 			}
 
-			err = db.DeleteTag(cCtx.Context, tagID)
-			if err != nil {
-				return err
+			var tag database.Tag
+			db.First(&tag, tagID)
+			if tag.ID == 0 {
+				fmt.Println("Tag not found")
 			}
+
+			db.Delete(&tag)
+
+			fmt.Println("Tag removed successfully")
 
 			return nil
 		},

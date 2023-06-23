@@ -6,30 +6,30 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/exler/nurli/internal/database"
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog"
+	"gorm.io/gorm"
 )
 
 type ServerConfig struct {
-	DB         *database.SQLiteDatabase
 	ServerPort int
-	Logger     *zerolog.Logger
 }
 
 type ServerHandler struct {
-	Config ServerConfig
+	DB     *gorm.DB
+	Logger *zerolog.Logger
 
 	templates *template.Template
 }
 
-func ServeApp(config ServerConfig) error {
+func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 	sh := ServerHandler{
-		Config: config,
+		DB:     db,
+		Logger: logger,
 	}
 	err := sh.prepareTemplates()
 	if err != nil {
-		config.Logger.Fatal().Err(err).Msg("Error preparing templates")
+		logger.Fatal().Err(err).Msg("Error preparing templates")
 	}
 
 	fs := http.FileServer(http.Dir("./internal/static"))
@@ -37,9 +37,23 @@ func ServeApp(config ServerConfig) error {
 	router := chi.NewRouter()
 
 	router.Handle("/static/*", http.StripPrefix("/static/", fs))
-	router.Get("/", sh.IndexHandler)
 
+	// Auth routes
+	router.Group(func(r chi.Router) {
+		r.Post("/login", sh.LoginHandler)
+		r.Get("/login", sh.LoginHandler)
+		r.Get("/logout", sh.LogoutHandler)
+	})
+
+	// UI routes
+	router.Route("/", func(r chi.Router) {
+		r.Use(sh.AuthMiddleware)
+		r.Get("/", sh.IndexHandler)
+	})
+
+	// API routes
 	router.Route("/api", func(r chi.Router) {
+		r.Use(sh.AuthMiddleware)
 		r.Get("/health", sh.HealthHandler)
 	})
 
@@ -51,7 +65,7 @@ func ServeApp(config ServerConfig) error {
 		Handler:      router,
 	}
 
-	config.Logger.Info().Msgf("Listening on port %d", config.ServerPort)
+	logger.Info().Msgf("Listening on port %d", config.ServerPort)
 
 	return srv.ListenAndServe()
 }

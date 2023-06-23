@@ -7,6 +7,7 @@ import (
 	"github.com/exler/nurli/internal/database"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
+	"gorm.io/gorm"
 )
 
 var logger zerolog.Logger
@@ -32,7 +33,7 @@ func Execute() error {
 	return Cmd.Run(os.Args)
 }
 
-func openDatabase(cCtx *cli.Context) (*database.SQLiteDatabase, error) {
+func openDatabase(cCtx *cli.Context) (*gorm.DB, error) {
 	var dataDir string
 	var err error
 	if dataDir = cCtx.String("data-dir"); dataDir == "" {
@@ -42,6 +43,6 @@ func openDatabase(cCtx *cli.Context) (*database.SQLiteDatabase, error) {
 		}
 	}
 	dbPath := filepath.Join(dataDir, "nurli.db")
-	db, err := database.OpenSQLiteDatabase(cCtx.Context, dbPath)
+	db, err := database.OpenDatabase(cCtx.Context, dbPath)
 	return db, err
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/exler/nurli/internal/core"
+	"github.com/exler/nurli/internal/database"
 	"github.com/urfave/cli/v2"
 )
 
@@ -36,14 +36,11 @@ var (
 			fmt.Print("Title: ")
 			title := GetUserInput()
 
-			err = db.CreateBookmark(cCtx.Context, core.Bookmark{
+			db.Create(&database.Bookmark{
 				URL:     url,
 				Title:   title,
-				OwnerID: userID,
+				OwnerID: uint(userID),
 			})
-			if err != nil {
-				return err
-			}
 
 			return nil
 		},
@@ -58,10 +55,8 @@ var (
 				return err
 			}
 
-			bookmarks, err := db.ListBookmarks(cCtx.Context)
-			if err != nil {
-				return err
-			}
+			var bookmarks []database.Bookmark
+			db.Select("id", "title", "read", "favorite").Find(&bookmarks)
 
 			if len(bookmarks) == 0 {
 				fmt.Println("No bookmarks found.")
@@ -88,10 +83,10 @@ var (
 				return err
 			}
 
-			err = db.ToggleBookmarkRead(cCtx.Context, bookmarkID)
-			if err != nil {
-				return err
-			}
+			tx := db.WithContext(cCtx.Context)
+			var bookmark database.Bookmark
+			tx.First(&bookmark, bookmarkID)
+			tx.Model(&database.Bookmark{}).Where("id = ?", bookmarkID).Update("read", !bookmark.Read)
 
 			return nil
 		},
@@ -108,10 +103,10 @@ var (
 				return err
 			}
 
-			err = db.ToggleBookmarkFavorite(cCtx.Context, bookmarkID)
-			if err != nil {
-				return err
-			}
+			tx := db.WithContext(cCtx.Context)
+			var bookmark database.Bookmark
+			tx.First(&bookmark, bookmarkID)
+			tx.Model(&database.Bookmark{}).Where("id = ?", bookmarkID).Update("favorite", !bookmark.Favorite)
 
 			return nil
 		},
@@ -128,10 +123,7 @@ var (
 				return err
 			}
 
-			err = db.DeleteBookmark(cCtx.Context, bookmarkID)
-			if err != nil {
-				return err
-			}
+			db.Delete(&database.Bookmark{}, bookmarkID)
 
 			return nil
 		},

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/exler/nurli/internal/core"
+	"github.com/exler/nurli/internal/database"
 	"github.com/urfave/cli/v2"
 )
 
@@ -31,13 +32,17 @@ var (
 			fmt.Print("Password: ")
 			password := GetUserSecureInput()
 
-			err = db.CreateUser(cCtx.Context, core.User{
-				Username: username,
-				Password: password,
-			})
+			hashed_password, err := core.HashPassword(password)
 			if err != nil {
 				return err
 			}
+
+			db.Create(&database.User{
+				Username: username,
+				Password: hashed_password,
+			})
+
+			fmt.Println("User created successfully")
 
 			return nil
 		},
@@ -52,10 +57,8 @@ var (
 				return err
 			}
 
-			users, err := db.ListUsers(cCtx.Context)
-			if err != nil {
-				return err
-			}
+			var users []database.User
+			db.Select("id, username").Find(&users)
 
 			if len(users) == 0 {
 				fmt.Println("No users found")
@@ -85,10 +88,15 @@ var (
 				return err
 			}
 
-			err = db.DeleteUserByUsername(cCtx.Context, username)
-			if err != nil {
-				return err
+			var user database.User
+			db.Where("username = ?", username).First(&user)
+			if user.ID == 0 {
+				return fmt.Errorf("user not found")
 			}
+
+			db.Delete(&user)
+
+			fmt.Println("User removed successfully")
 
 			return nil
 		},

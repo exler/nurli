@@ -148,3 +148,36 @@ func (db *SQLiteDatabase) DeleteBookmark(ctx context.Context, bookmarkID int) er
 
 	return nil
 }
+
+func (db *SQLiteDatabase) CreateTag(ctx context.Context, tag core.Tag) error {
+	if err := db.withTx(ctx, func(tx *sqlx.Tx) error {
+		_, err := tx.Exec("INSERT INTO tags (name, owner_id) VALUES (?, ?)", tag.Name, tag.OwnerID)
+		return err
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *SQLiteDatabase) ListTags(ctx context.Context) ([]core.Tag, error) {
+	query := `SELECT id, name, owner_id FROM tags`
+	var tags []core.Tag
+	err := db.SelectContext(ctx, &tags, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}
+
+func (db *SQLiteDatabase) DeleteTag(ctx context.Context, tagID int) error {
+	if err := db.withTx(ctx, func(tx *sqlx.Tx) error {
+		_, err := tx.Exec("DELETE FROM tags WHERE id = ?", tagID)
+		return err
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}

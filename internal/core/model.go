@@ -10,8 +10,9 @@ type User struct {
 }
 
 type Tag struct {
-	ID   int    `db:"id" json:"id"`
-	Name string `db:"name" json:"name"`
+	ID      int    `db:"id" json:"id"`
+	Name    string `db:"name" json:"name"`
+	OwnerID int    `db:"owner_id" json:"owner_id"`
 }
 
 type Bookmark struct {
@@ -19,7 +20,9 @@ type Bookmark struct {
 	URL       string    `db:"url" json:"url"`
 	Title     string    `db:"title" json:"title"`
 	Tags      []Tag     `json:"tags"`
-	Owner     User      `json:"owner"`
+	OwnerID   int       `db:"owner_id" json:"owner_id"`
+	Read      bool      `db:"read" json:"read"`
+	Favorite  bool      `db:"favorite" json:"favorite"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }

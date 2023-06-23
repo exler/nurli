@@ -92,3 +92,59 @@ func (db *SQLiteDatabase) DeleteUserByUsername(ctx context.Context, username str
 
 	return nil
 }
+
+func (db *SQLiteDatabase) CreateBookmark(ctx context.Context, bookmark core.Bookmark) error {
+	if err := db.withTx(ctx, func(tx *sqlx.Tx) error {
+		_, err := tx.Exec("INSERT INTO bookmarks (title, url, owner_id) VALUES (?, ?, ?)",
+			bookmark.Title, bookmark.URL, bookmark.OwnerID,
+		)
+
+		return err
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *SQLiteDatabase) ListBookmarks(ctx context.Context) ([]core.Bookmark, error) {
+	query := `SELECT id, title, url, owner_id, read, favorite FROM bookmarks`
+	var bookmarks []core.Bookmark
+	err := db.SelectContext(ctx, &bookmarks, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return bookmarks, nil
+}
+
+func (db *SQLiteDatabase) ToggleBookmarkRead(ctx context.Context, bookmarkID int) error {
+	query := `UPDATE bookmarks SET read = (1 - read) WHERE id = ?`
+	_, err := db.ExecContext(ctx, query, bookmarkID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *SQLiteDatabase) ToggleBookmarkFavorite(ctx context.Context, bookmarkID int) error {
+	query := `UPDATE bookmarks SET favorite = (1 - favorite) WHERE id = ?`
+	_, err := db.ExecContext(ctx, query, bookmarkID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *SQLiteDatabase) DeleteBookmark(ctx context.Context, bookmarkID int) error {
+	if err := db.withTx(ctx, func(tx *sqlx.Tx) error {
+		_, err := tx.Exec("DELETE FROM bookmarks WHERE id = ?", bookmarkID)
+		return err
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -62,8 +62,9 @@ var (
 				return nil
 			}
 
+			PrintListHeader("ID", "Username")
 			for _, user := range users {
-				fmt.Printf("%s\n", user.Username)
+				fmt.Printf("%d\t%s\n", user.ID, user.Username)
 			}
 
 			return nil

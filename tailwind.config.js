@@ -4,17 +4,13 @@ module.exports = {
         'internal/templates/**/*.html'
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                'primary': '#FF8906',
+            }
+        }
     },
-    plugins: [],
-    daisyui: {
-        styled: true,
-        themes: [],
-        base: true,
-        utils: true,
-        logs: true,
-        rtl: false,
-        prefix: "",
-        darkTheme: "dark",
-    },
+    plugins: [
+        require('@tailwindcss/forms'),
+    ],
 }

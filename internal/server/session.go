@@ -27,18 +27,19 @@ func (sh *ServerHandler) getSessionToken(r *http.Request) string {
 	return cookie.Value
 }
 
-func (sh *ServerHandler) createUserSession(r *http.Request, user *database.User) error {
+func (sh *ServerHandler) createUserSession(w http.ResponseWriter, user *database.User) error {
 	sessionToken := generateSecureSessionToken()
 	sh.DB.Create(&database.Session{
 		UserID:    user.ID,
 		Token:     sessionToken,
 		ExpiresAt: time.Now().Add(time.Hour * 24 * 30),
 	})
-	r.AddCookie(&http.Cookie{
+	cookie := http.Cookie{
 		Name:    "session",
 		Value:   sessionToken,
 		Expires: time.Now().Add(time.Hour * 24 * 30),
-	})
+	}
+	http.SetCookie(w, &cookie)
 	return nil
 }
 
@@ -59,17 +60,18 @@ func (sh *ServerHandler) validateUserSession(r *http.Request) error {
 	return nil
 }
 
-func (sh *ServerHandler) invalidateUserSession(r *http.Request) error {
+func (sh *ServerHandler) invalidateUserSession(w http.ResponseWriter, r *http.Request) error {
 	sessionToken := sh.getSessionToken(r)
 	if sessionToken == "" {
 		return fmt.Errorf("no session token provided")
 	}
 
 	sh.DB.Where("token = ?", sessionToken).Delete(&database.Session{})
-	r.AddCookie(&http.Cookie{
+	cookie := http.Cookie{
 		Name:    "session",
 		Value:   "",
 		Expires: time.Now().Add(time.Hour * -1),
-	})
+	}
+	http.SetCookie(w, &cookie)
 	return nil
 }

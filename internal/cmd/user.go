@@ -42,6 +42,7 @@ var (
 				Password: hashed_password,
 			})
 
+			fmt.Println("") // New line after secure input required
 			fmt.Println("User created successfully")
 
 			return nil

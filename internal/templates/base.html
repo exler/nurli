@@ -1,15 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ block "title" . }}{{ end }}</title>
-    
+
     <link rel="stylesheet" href="static/css/base.css">
 </head>
+
 <body>
-    {{ template "menuPartial" }}
-    {{ block "content" . }}{{ end }}
-    {{ template "footerPartial" }}
+    <div class="flex flex-row">
+        <div class="flex-initial w-60">
+            {{ template "menuPartial" }}
+        </div>
+        <div class="flex-1 h-full mx-2 mt-1">
+            {{ block "content" . }}{{ end }}
+        </div>
+    </div>
 </body>
+
 </html>

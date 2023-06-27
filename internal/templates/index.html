@@ -1,8 +1,30 @@
 {{ template "base.html" . }}
 
-{{ define "title" }}Index{{ end }}
+{{ define "title" }}All Bookmarks{{ end }}
 
 {{ define "content" }}
-    <h1>Index</h1>
-    <p>Index page</p>
+<header class="border-b-2">
+    <h4 class="text-2xl font-semibold">All Bookmarks</h4>
+</header>
+<section class="scrollable">
+    <div class="bookmark-list">
+        {{ range . }}
+        <div class="bookmark-item relative border-b-2 pb-2">
+            <div class="bookmark-title text-xl">
+                {{ .Title }}
+            </div>
+            <div class="bookmark-excerpt text-sm text-gray-800">
+                Not yet implemented
+            </div>
+            <div class="bookmark-info text-sm text-gray-500">
+                {{if .Read}}Read{{else}}Unread{{end}} · {{ .URL | domain }} · {{ .CreatedAt.Format "02 Jan 2006"}}
+            </div>
+            <a href="{{ .URL }}" target="_blank" rel="noopener noreferrer"
+                class="bookmark-link absolute left-0 top-0 right-0 bottom-0 text-transparent outline-none no-underline"></a>
+        </div>
+        {{ end }}
+    </div>
+    <div class="pagination">
+    </div>
+</section>
 {{ end }}

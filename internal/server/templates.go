@@ -5,10 +5,13 @@ import (
 	"net/http"
 
 	"github.com/exler/nurli/internal"
+	"github.com/exler/nurli/internal/core"
 )
 
 func (sh *ServerHandler) prepareTemplates() (err error) {
-	funcMap := template.FuncMap{}
+	funcMap := template.FuncMap{
+		"domain": core.GetDomainFromURL,
+	}
 
 	// `templates/**/*.html` doesn't pick up the files in the `templates/` directory
 	// so we have to add the top directory to the patterns list.

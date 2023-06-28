@@ -16,7 +16,7 @@
 <body>
     <div class="flex flex-row">
         <div class="flex-initial w-60">
-            {{ template "menuPartial" }}
+            {{ template "menuPartial" . }}
         </div>
         <div class="flex-1 h-full mx-2 mt-1">
             {{ block "content" . }}{{ end }}

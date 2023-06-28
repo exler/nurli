@@ -1,14 +1,14 @@
 {{ template "base.html" . }}
 
-{{ define "title" }}All Bookmarks{{ end }}
+{{ define "title" }}Bookmarks{{ end }}
 
 {{ define "content" }}
 <header class="border-b-2">
-    <h4 class="text-2xl font-semibold">All Bookmarks</h4>
+    <h4 class="text-2xl font-semibold">Bookmarks</h4>
 </header>
 <section class="scrollable">
     <div class="bookmark-list">
-        {{ range . }}
+        {{ range .Bookmarks }}
         <div class="bookmark-item relative border-b-2 pb-2">
             <div class="bookmark-title text-xl">
                 {{ .Title }}

@@ -1,0 +1,47 @@
+{{ template "base.html" . }}
+
+{{ define "title" }}Add Bookmark{{ end }}
+
+{{ define "content" }}
+<header class="border-b-2">
+    <h4 class="text-2xl font-semibold">Add Bookmark</h4>
+</header>
+<section class="scrollable">
+    <div class="w-96 mt-6 mx-auto">
+        <form action="/add" method="POST" class="grid grid-cols-6 gap-6">
+            <div class="col-span-6">
+                <label for="url">URL</label>
+                <input type="text" name="url" id="url" class="w-full" placeholder="https://example.com" required>
+            </div>
+            <div class="col-span-6">
+                <label for="tags" class="block">Tags</label>
+                <select multiple id="tags" name="tags[]" class="tags-select w-full hidden">
+                    {{ range .Tags }}
+                    <option value="{{ .ID }}">{{ .Name }}</option>
+                    {{ end }}
+                </select>
+            </div>
+            <div class="col-span-6">
+                <input type="checkbox" name="favorite" id="favorite">
+                <label for="favorite">Favorite</label>
+            </div>
+            <div class="col-span-6">
+                <input type="checkbox" name="read" id="read">
+                <label for="read">Read</label>
+            </div>
+            <button type="submit" class="col-span-6 w-full border border-primary">Add</button>
+        </form>
+    </div>
+</section>
+{{ end }}
+
+{{ define "scripts" }}
+<script>
+    $(document).ready(function () {
+        $(".tags-select").select2({
+            width: "100%",
+            tags: true
+        });
+    });
+</script>
+{{ end }}

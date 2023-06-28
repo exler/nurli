@@ -43,21 +43,21 @@ func (sh *ServerHandler) createUserSession(w http.ResponseWriter, user *database
 	return nil
 }
 
-func (sh *ServerHandler) validateUserSession(r *http.Request) error {
+func (sh *ServerHandler) validateUserSession(r *http.Request) (*database.User, error) {
 	sessionToken := sh.getSessionToken(r)
 	if sessionToken == "" {
-		return fmt.Errorf("no session token provided")
+		return nil, fmt.Errorf("no session token provided")
 	}
 
 	var session database.Session
-	sh.DB.Where("token = ?", sessionToken).First(&session)
+	sh.DB.Where("token = ?", sessionToken).Preload("User").First(&session)
 	if session.ID == 0 {
-		return fmt.Errorf("invalid session token")
+		return nil, fmt.Errorf("invalid session token")
 	} else if session.ExpiresAt.Before(time.Now()) {
-		return fmt.Errorf("session expired")
+		return nil, fmt.Errorf("session expired")
 	}
 
-	return nil
+	return &session.User, nil
 }
 
 func (sh *ServerHandler) invalidateUserSession(w http.ResponseWriter, r *http.Request) error {

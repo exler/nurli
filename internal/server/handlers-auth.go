@@ -15,21 +15,14 @@ func (sh *ServerHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		var user database.User
 		sh.DB.Where("username = ?", username).First(&user)
 		if user.ID == 0 || !core.CheckPasswordHash(password, user.Password) {
-			err := sh.templates.ExecuteTemplate(w, "login.html", map[string]interface{}{"error": "Invalid username or password"})
-			if err != nil {
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			}
+			sh.renderTemplate(w, "login", map[string]interface{}{"error": "Invalid username or password"})
 			return
 		}
 
 		sh.createUserSession(w, &user)
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		err := sh.templates.ExecuteTemplate(w, "login.html", nil)
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
+		sh.renderTemplate(w, "login", nil)
 	}
 }
 

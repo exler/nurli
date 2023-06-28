@@ -49,6 +49,9 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 	router.Route("/", func(r chi.Router) {
 		r.Use(sh.AuthMiddleware)
 		r.Get("/", sh.IndexHandler)
+
+		r.Get("/add", sh.AddBookmarkHandler)
+		r.Post("/add", sh.AddBookmarkHandler)
 	})
 
 	// API routes

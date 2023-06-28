@@ -20,7 +20,11 @@ func (sh *ServerHandler) prepareTemplates() (err error) {
 }
 
 func (sh *ServerHandler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
-	err := sh.templates.ExecuteTemplate(w, tmpl+".html", data)
+	// We have to clone the templates to ensure that the {{ content }} is actually from the desired template
+	// and not from the first parsed.
+	clone := template.Must(sh.templates.Clone())
+	clone = template.Must(clone.ParseFS(internal.TemplateFS, "templates/"+tmpl+".html"))
+	err := clone.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}

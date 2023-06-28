@@ -40,7 +40,19 @@
     $(document).ready(function () {
         $(".tags-select").select2({
             width: "100%",
-            tags: true
+            tags: true,
+            createTag: function (params) {
+                let term = $.trim(params.term);
+
+                if (term === "") {
+                    return null;
+                }
+
+                return {
+                    id: "NEW:" + term,
+                    text: term
+                };
+            }
         });
     });
 </script>

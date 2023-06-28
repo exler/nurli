@@ -34,7 +34,7 @@ var (
 
 			db.Create(&database.Tag{
 				Name:    name,
-				OwnerID: userID,
+				OwnerID: uint(userID),
 			})
 
 			fmt.Println("Tag created successfully")

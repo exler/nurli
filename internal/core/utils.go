@@ -85,3 +85,11 @@ func GetDescriptionFromHTML(doc *html.Node) string {
 
 	return description
 }
+
+func TrimString(s string, max_length int) string {
+	if len(s) > max_length {
+		return s[:max_length] + "..."
+	}
+
+	return s
+}

@@ -16,6 +16,11 @@
             <div class="bookmark-description text-sm text-gray-800">
                 {{ .Description }}
             </div>
+            <div class="text-sm text-primary">
+                {{ range .Tags }}
+                <a href="/?tag={{ .Name }}" class="relative z-10"><span class="tag">#{{ .Name }}</span></a>
+                {{ end }}
+            </div>
             <div class="bookmark-info text-sm text-gray-500">
                 {{if .Read}}Read{{else}}Unread{{end}} · {{ .URL | domain }} · {{ .CreatedAt.Format "02 Jan 2006"}}
             </div>

@@ -17,7 +17,7 @@ type User struct {
 type Tag struct {
 	ID      uint   `gorm:"primaryKey"`
 	Name    string `gorm:"uniqueIndex:idx_tag_name"`
-	OwnerID int    `gorm:"uniqueIndex:idx_tag_name"`
+	OwnerID uint   `gorm:"uniqueIndex:idx_tag_name"`
 	Owner   User
 }
 

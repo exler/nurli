@@ -50,6 +50,9 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 		r.Use(sh.AuthMiddleware)
 		r.Get("/", sh.IndexHandler)
 
+		r.Get("/settings", sh.SettingsHandler)
+		r.Post("/settings", sh.SettingsHandler)
+
 		r.Get("/add", sh.AddBookmarkHandler)
 		r.Post("/add", sh.AddBookmarkHandler)
 

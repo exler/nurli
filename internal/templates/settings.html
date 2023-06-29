@@ -1,0 +1,56 @@
+{{ template "base.html" . }}
+
+{{ define "title" }}Settings{{ end }}
+
+{{ define "content" }}
+<header class="border-b-2">
+    <h4 class="text-3xl font-semibold">Settings</h4>
+</header>
+<section class="scrollable">
+    <div class="w-96 mt-6 mx-auto">
+        <form action="/settings" method="POST" class="grid grid-cols-6 gap-6">
+            <div class="col-span-6">
+                {{ if .Message }}
+                <div role="alert" class="rounded border-2 border-primary text-center">
+                    <strong class="block font-medium">{{ .Message }}</strong>
+                </div>
+                {{ end }}
+            </div>
+            <div class="col-span-6">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username"
+                    class="w-full bg-slate-50 text-slate-500 border-slate-200 shadow-none" value="{{ .User.Username }}"
+                    disabled>
+            </div>
+            <div class="col-span-6">
+                <label for="old_password">Old Password</label>
+                <input type="password" name="old_password" id="old_password" class="w-full">
+            </div>
+            <div class="col-span-6">
+                <label for="new_password">New Password</label>
+                <input type="password" name="new_password" id="new_password" class="w-full">
+            </div>
+            <div class="col-span-6">
+                <label for="confirm_password">Confirm Password</label>
+                <input
+                    class="w-full disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none"
+                    type="password" name="confirm_password" id="confirm_password" disabled required>
+            </div>
+            <button type="submit" class="col-span-6 w-full border border-primary">
+                Update
+            </button>
+        </form>
+    </div>
+</section>
+{{ end }}
+
+{{ define "scripts" }}
+<script>
+    $(document).ready(function () {
+        $("#new_password").on("input", function () {
+            let disabledValue = $(this).val() === "";
+            $("#confirm_password").prop("disabled", disabledValue);
+        });
+    });
+</script>
+{{ end }}

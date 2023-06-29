@@ -193,3 +193,36 @@ func (sh *ServerHandler) DeleteBookmarkHandler(w http.ResponseWriter, r *http.Re
 		})
 	}
 }
+
+func (sh *ServerHandler) SettingsHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromRequest(r)
+
+	if r.Method == "POST" {
+		var message string
+
+		oldPassword := r.FormValue("old_password")
+		newPassword := r.FormValue("new_password")
+		if oldPassword != "" && newPassword != "" {
+			if !core.CheckPasswordHash(oldPassword, user.Password) {
+				message = "Old password is incorrect!"
+			} else {
+				hashedPassword, err := core.HashPassword(r.FormValue("password"))
+				if err != nil {
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+				sh.DB.Model(&user).Update("Password", hashedPassword)
+				message = "Password updated!"
+			}
+		}
+
+		sh.renderTemplate(w, "settings", map[string]interface{}{
+			"Message": message,
+			"User":    user,
+		})
+	} else {
+		sh.renderTemplate(w, "settings", map[string]interface{}{
+			"User": user,
+		})
+	}
+}

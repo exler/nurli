@@ -144,13 +144,13 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 			description = core.TrimString(core.GetDescriptionFromHTML(page_html), core.DESCRIPTION_TRIM_LENGTH)
 		}
 
-		// Update the bookmark
-		sh.DB.Model(&bookmark).Updates(database.Bookmark{
-			URL:         url,
-			Title:       title,
-			Description: description,
-			Read:        read,
-			Favorite:    favorite,
+		// Update the bookmark as map because GORM only updates non-zero fields
+		sh.DB.Model(&bookmark).Updates(map[string]interface{}{
+			"URL":         url,
+			"Title":       title,
+			"Description": description,
+			"Read":        read,
+			"Favorite":    favorite,
 		})
 
 		// Update the tags

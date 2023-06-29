@@ -1,0 +1,23 @@
+{{ template "base.html" . }}
+
+{{ define "title" }}Confirm deletion{{ end }}
+
+{{ define "content" }}
+<header class="border-b-2">
+    <h4 class="text-3xl font-semibold">Confirm deletion</h4>
+</header>
+<section class="scrollable">
+    <div class="w-96 mt-6 mx-auto">
+        <form action="/delete/{{ .Bookmark.ID }}" method="POST" class="grid grid-cols-12 gap-6 text-center">
+            <div class="col-span-12">
+                <p>
+                    Please confirm the deletion of the bookmark: <br /><br />
+                    <span class="font-semibold">{{ .Bookmark.Title }}</span>
+                </p>
+            </div>
+            <button type="submit" class="col-span-9 w-full border border-red-900 bg-red-600">Delete</button>
+            <a href="/" class="col-span-3 w-full border border-gray-600">Cancel</a>
+        </form>
+    </div>
+</section>
+{{ end }}

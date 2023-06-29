@@ -3,6 +3,7 @@ package server
 import (
 	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/exler/nurli/internal"
 	"github.com/exler/nurli/internal/core"
@@ -10,6 +11,7 @@ import (
 
 func (sh *ServerHandler) prepareTemplates() (err error) {
 	funcMap := template.FuncMap{
+		"idIn":   core.IsIDInSlice,
 		"domain": core.GetDomainFromURL,
 	}
 
@@ -24,6 +26,11 @@ func (sh *ServerHandler) renderTemplate(w http.ResponseWriter, tmpl string, data
 	// and not from the first parsed.
 	clone := template.Must(sh.templates.Clone())
 	clone = template.Must(clone.ParseFS(internal.TemplateFS, "templates/"+tmpl+".html"))
+	// Get only the filename from the path as the templates are added into the namespace
+	// by their filename only.
+	if slashIndex := strings.LastIndex(tmpl, "/"); slashIndex != -1 {
+		tmpl = tmpl[slashIndex+1:]
+	}
 	err := clone.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

@@ -1,35 +1,40 @@
 {{ template "base.html" . }}
 
-{{ define "title" }}Add Bookmark{{ end }}
+{{ define "title" }}{{ if .Bookmark }}Edit{{ else }}Add{{ end }} Bookmark{{ end }}
 
 {{ define "content" }}
 <header class="border-b-2">
-    <h4 class="text-2xl font-semibold">Add Bookmark</h4>
+    <h4 class="text-3xl font-semibold">{{ if .Bookmark }}Edit{{ else }}Add{{ end }} Bookmark</h4>
 </header>
 <section class="scrollable">
     <div class="w-96 mt-6 mx-auto">
-        <form action="/add" method="POST" class="grid grid-cols-6 gap-6">
+        <form {{ if .Bookmark }} action="/edit/{{ .Bookmark.ID }}" {{ else }} action="/add" {{ end }} method="POST"
+            class="grid grid-cols-6 gap-6">
             <div class="col-span-6">
                 <label for="url">URL</label>
-                <input type="text" name="url" id="url" class="w-full" placeholder="https://example.com" required>
+                <input type="text" name="url" id="url" class="w-full" placeholder="https://example.com" required
+                    value="{{ .Bookmark.URL }}">
             </div>
             <div class="col-span-6">
                 <label for="tags" class="block">Tags</label>
                 <select multiple id="tags" name="tags[]" class="tags-select w-full hidden">
+                    {{ $initialTags := .InitialTags }}
                     {{ range .Tags }}
-                    <option value="{{ .ID }}">{{ .Name }}</option>
+                    <option value="{{ .ID }}" {{ if idIn .ID $initialTags }}selected{{ end }}>{{ .Name }}</option>
                     {{ end }}
                 </select>
             </div>
             <div class="col-span-6">
-                <input type="checkbox" name="favorite" id="favorite">
+                <input type="checkbox" name="favorite" id="favorite" {{ if .Bookmark.Favorite }}checked{{ end }}>
                 <label for="favorite">Favorite</label>
             </div>
             <div class="col-span-6">
-                <input type="checkbox" name="read" id="read">
+                <input type="checkbox" name="read" id="read" {{ if .Bookmark.Read }}checked{{ end }}>
                 <label for="read">Read</label>
             </div>
-            <button type="submit" class="col-span-6 w-full border border-primary">Add</button>
+            <button type="submit" class="col-span-6 w-full border border-primary">
+                {{ if .Bookmark }}Edit{{ else }}Add{{ end }}
+            </button>
         </form>
     </div>
 </section>

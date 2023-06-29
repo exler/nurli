@@ -6,16 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ block "title" . }}{{ end }}</title>
 
-    <link rel="stylesheet" href="static/css/base.css">
-    <link rel="stylesheet" href="static/css/select2-4.0.13.min.css">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=open-sans:300,600" rel="stylesheet" />
 
-    <script src="static/js/jquery-3.7.0.slim.min.js"></script>
-    <script src="static/js/select2-4.0.13.min.js"></script>
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/select2-4.0.13.min.css">
+
+    <script src="/static/js/jquery-3.7.0.slim.min.js"></script>
+    <script src="/static/js/select2-4.0.13.min.js"></script>
 </head>
 
 <body>
     <div class="flex flex-row">
-        <div class="flex-initial w-60">
+        <div class="flex-initial w-40 md:w-60">
             {{ template "menuPartial" . }}
         </div>
         <div class="flex-1 h-full mx-2 mt-1">

@@ -52,6 +52,12 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 
 		r.Get("/add", sh.AddBookmarkHandler)
 		r.Post("/add", sh.AddBookmarkHandler)
+
+		r.Get("/edit/{id}", sh.EditBookmarkHandler)
+		r.Post("/edit/{id}", sh.EditBookmarkHandler)
+
+		r.Get("/delete/{id}", sh.DeleteBookmarkHandler)
+		r.Post("/delete/{id}", sh.DeleteBookmarkHandler)
 	})
 
 	// API routes

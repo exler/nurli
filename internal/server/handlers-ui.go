@@ -6,6 +6,7 @@ import (
 
 	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
+	"github.com/go-chi/chi"
 )
 
 func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +40,7 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	var tags []database.Tag
 	sh.DB.Where("owner_id = ?", user.ID).Find(&tags)
 
-	sh.renderTemplate(w, "index", map[string]interface{}{
+	sh.renderTemplate(w, "bookmark/bookmark_list", map[string]interface{}{
 		"Bookmarks": bookmarks,
 		"Tags":      tags,
 	})
@@ -51,6 +52,8 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 	if r.Method == "POST" {
 		r.ParseForm()
 		url := r.FormValue("url")
+		read := r.FormValue("read") == "on"
+		favorite := r.FormValue("favorite") == "on"
 		tags := r.Form["tags[]"]
 		tagObjects := []database.Tag{}
 
@@ -81,6 +84,8 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 			URL:         url,
 			Title:       title,
 			Description: description,
+			Read:        read,
+			Favorite:    favorite,
 			OwnerID:     user.ID,
 			Tags:        tagObjects,
 		}
@@ -90,8 +95,101 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 	} else {
 		var tags []database.Tag
 		sh.DB.Model(&user).Association("Tags").Find(&tags)
-		sh.renderTemplate(w, "add-bookmark", map[string]interface{}{
+		sh.renderTemplate(w, "bookmark/bookmark_change_form", map[string]interface{}{
 			"Tags": tags,
+		})
+	}
+}
+
+func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromRequest(r)
+
+	if r.Method == "POST" {
+		r.ParseForm()
+		url := r.FormValue("url")
+		read := r.FormValue("read") == "on"
+		favorite := r.FormValue("favorite") == "on"
+		tags := r.Form["tags[]"]
+
+		// Get the bookmark from the database
+		var bookmark database.Bookmark
+		sh.DB.Preload("Tags").Where("id = ? AND owner_id = ?", chi.URLParam(r, "id"), user.ID).First(&bookmark)
+
+		tagObjects := []database.Tag{}
+		for _, tag := range tags {
+			var tagObj database.Tag
+			if strings.HasPrefix(tag, "NEW:") {
+				tagObj = database.Tag{
+					Name:    strings.TrimPrefix(tag, "NEW:"),
+					OwnerID: user.ID,
+				}
+				sh.DB.Create(&tagObj)
+			} else {
+				sh.DB.Where("id = ? AND owner_id = ?", tag, user.ID).First(&tagObj)
+			}
+			tagObjects = append(tagObjects, tagObj)
+		}
+
+		page_html, err := core.GetPageHTML(url)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		title := bookmark.Title
+		description := bookmark.Description
+
+		if url != bookmark.URL {
+			title = core.GetTitleFromHTML(page_html)
+			description = core.TrimString(core.GetDescriptionFromHTML(page_html), core.DESCRIPTION_TRIM_LENGTH)
+		}
+
+		// Update the bookmark
+		sh.DB.Model(&bookmark).Updates(database.Bookmark{
+			URL:         url,
+			Title:       title,
+			Description: description,
+			Read:        read,
+			Favorite:    favorite,
+		})
+
+		// Update the tags
+		sh.DB.Model(&bookmark).Association("Tags").Replace(tagObjects)
+
+		http.Redirect(w, r, "/", http.StatusFound)
+	} else {
+		var bookmark database.Bookmark
+		sh.DB.Where("id = ? AND owner_id = ?", chi.URLParam(r, "id"), user.ID).Preload("Tags").First(&bookmark)
+
+		var tags []database.Tag
+		sh.DB.Model(&user).Association("Tags").Find(&tags)
+
+		var initialTags []uint
+		for _, tag := range bookmark.Tags {
+			initialTags = append(initialTags, tag.ID)
+		}
+
+		sh.renderTemplate(w, "bookmark/bookmark_change_form", map[string]interface{}{
+			"Bookmark":    bookmark,
+			"Tags":        tags,
+			"InitialTags": initialTags,
+		})
+	}
+}
+
+func (sh *ServerHandler) DeleteBookmarkHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromRequest(r)
+
+	var bookmark database.Bookmark
+	sh.DB.Where("id = ? AND owner_id = ?", chi.URLParam(r, "id"), user.ID).First(&bookmark)
+
+	if r.Method == "POST" {
+		sh.DB.Delete(&bookmark)
+
+		http.Redirect(w, r, "/", http.StatusFound)
+	} else {
+		sh.renderTemplate(w, "bookmark/bookmark_confirm_delete", map[string]interface{}{
+			"Bookmark": bookmark,
 		})
 	}
 }

@@ -94,10 +94,9 @@ func TrimString(s string, max_length int) string {
 	return s
 }
 
-// IsIDInSlice checks if an ID (uint) is in a slice of IDs ([]uint).
-func IsIDInSlice(id uint, slice []uint) bool {
-	for _, i := range slice {
-		if i == id {
+func StringIn(s string, slice []string) bool {
+	for _, val := range slice {
+		if val == s {
 			return true
 		}
 	}

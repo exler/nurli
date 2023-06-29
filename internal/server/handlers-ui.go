@@ -2,7 +2,6 @@ package server
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
@@ -10,8 +9,6 @@ import (
 )
 
 func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
-	user := getUserFromRequest(r)
-
 	// Get filters from query parameters
 	queryParams := r.URL.Query()
 	readFilter := queryParams.Get("read")
@@ -20,25 +17,23 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	tagFilter := queryParams.Get("tag")
 
 	var bookmarks []database.Bookmark
-	// Find all bookmarks for the current user and load tags for each bookmark
-	// taking into account the filters
+	// Find all bookmarks and load tags for each bookmark taking into account the filters
 	if readFilter != "" {
-		sh.DB.Preload("Tags").Where("owner_id = ? AND read = ?", user.ID, readFilter).Find(&bookmarks)
+		sh.DB.Preload("Tags").Where("read = ?", readFilter).Find(&bookmarks)
 	} else if favoriteFilter != "" {
-		sh.DB.Preload("Tags").Where("owner_id = ? AND favorite = ?", user.ID, favoriteFilter).Find(&bookmarks)
+		sh.DB.Preload("Tags").Where("favorite = ?", favoriteFilter).Find(&bookmarks)
 	} else if noTagsFilter != "" {
-		sh.DB.Preload("Tags").Where("owner_id = ? AND (SELECT COUNT(*) FROM bookmark_tags WHERE bookmark_id = bookmarks.id) = 0", user.ID).Find(&bookmarks)
+		sh.DB.Preload("Tags").Where("(SELECT COUNT(*) FROM bookmark_tags WHERE bookmark_id = bookmarks.id) = 0").Find(&bookmarks)
 	} else if tagFilter != "" {
 		var tag database.Tag
-		sh.DB.Where("name = ? AND owner_id = ?", tagFilter, user.ID).First(&tag)
-		sh.DB.Preload("Tags").Where("owner_id = ? AND ? IN (SELECT tag_id FROM bookmark_tags WHERE bookmark_id = bookmarks.id)", user.ID, tag.ID).Find(&bookmarks)
+		sh.DB.Where("name = ?", tagFilter).First(&tag)
+		sh.DB.Preload("Tags").Where("? IN (SELECT tag_id FROM bookmark_tags WHERE bookmark_id = bookmarks.id)", tag.ID).Find(&bookmarks)
 	} else {
-		sh.DB.Preload("Tags").Where("owner_id = ?", user.ID).Find(&bookmarks)
+		sh.DB.Preload("Tags").Find(&bookmarks)
 	}
 
-	// Find all tags for the current user
 	var tags []database.Tag
-	sh.DB.Where("owner_id = ?", user.ID).Find(&tags)
+	sh.DB.Find(&tags)
 
 	sh.renderTemplate(w, "bookmark/bookmark_list", map[string]interface{}{
 		"Bookmarks": bookmarks,
@@ -47,8 +42,6 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Request) {
-	user := getUserFromRequest(r)
-
 	if r.Method == "POST" {
 		r.ParseForm()
 		url := r.FormValue("url")
@@ -58,16 +51,10 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 		tagObjects := []database.Tag{}
 
 		for _, tag := range tags {
-			var tagObj database.Tag
-			if strings.HasPrefix(tag, "NEW:") {
-				tagObj = database.Tag{
-					Name:    strings.TrimPrefix(tag, "NEW:"),
-					OwnerID: user.ID,
-				}
-				sh.DB.Create(&tagObj)
-			} else {
-				sh.DB.Where("id = ? AND owner_id = ?", tag, user.ID).First(&tagObj)
+			tagObj := database.Tag{
+				Name: tag,
 			}
+			sh.DB.Where("name = ?", tag).FirstOrCreate(&tagObj)
 			tagObjects = append(tagObjects, tagObj)
 		}
 
@@ -86,7 +73,6 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 			Description: description,
 			Read:        read,
 			Favorite:    favorite,
-			OwnerID:     user.ID,
 			Tags:        tagObjects,
 		}
 		sh.DB.Create(&bookmark)
@@ -94,7 +80,7 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		var tags []database.Tag
-		sh.DB.Model(&user).Association("Tags").Find(&tags)
+		sh.DB.Find(&tags)
 		sh.renderTemplate(w, "bookmark/bookmark_change_form", map[string]interface{}{
 			"Tags": tags,
 		})
@@ -102,8 +88,6 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Request) {
-	user := getUserFromRequest(r)
-
 	if r.Method == "POST" {
 		r.ParseForm()
 		url := r.FormValue("url")
@@ -113,20 +97,14 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 
 		// Get the bookmark from the database
 		var bookmark database.Bookmark
-		sh.DB.Preload("Tags").Where("id = ? AND owner_id = ?", chi.URLParam(r, "id"), user.ID).First(&bookmark)
+		sh.DB.Preload("Tags").Where("id = ?", chi.URLParam(r, "id")).First(&bookmark)
 
 		tagObjects := []database.Tag{}
 		for _, tag := range tags {
-			var tagObj database.Tag
-			if strings.HasPrefix(tag, "NEW:") {
-				tagObj = database.Tag{
-					Name:    strings.TrimPrefix(tag, "NEW:"),
-					OwnerID: user.ID,
-				}
-				sh.DB.Create(&tagObj)
-			} else {
-				sh.DB.Where("id = ? AND owner_id = ?", tag, user.ID).First(&tagObj)
+			tagObj := database.Tag{
+				Name: tag,
 			}
+			sh.DB.Where("name = ?", tag).FirstOrCreate(&tagObj)
 			tagObjects = append(tagObjects, tagObj)
 		}
 
@@ -159,14 +137,14 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		var bookmark database.Bookmark
-		sh.DB.Where("id = ? AND owner_id = ?", chi.URLParam(r, "id"), user.ID).Preload("Tags").First(&bookmark)
+		sh.DB.Where("id = ?", chi.URLParam(r, "id")).Preload("Tags").First(&bookmark)
 
 		var tags []database.Tag
-		sh.DB.Model(&user).Association("Tags").Find(&tags)
+		sh.DB.Find(&tags)
 
-		var initialTags []uint
+		var initialTags []string
 		for _, tag := range bookmark.Tags {
-			initialTags = append(initialTags, tag.ID)
+			initialTags = append(initialTags, tag.Name)
 		}
 
 		sh.renderTemplate(w, "bookmark/bookmark_change_form", map[string]interface{}{
@@ -178,10 +156,8 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (sh *ServerHandler) DeleteBookmarkHandler(w http.ResponseWriter, r *http.Request) {
-	user := getUserFromRequest(r)
-
 	var bookmark database.Bookmark
-	sh.DB.Where("id = ? AND owner_id = ?", chi.URLParam(r, "id"), user.ID).First(&bookmark)
+	sh.DB.Where("id = ?", chi.URLParam(r, "id")).First(&bookmark)
 
 	if r.Method == "POST" {
 		sh.DB.Delete(&bookmark)
@@ -190,39 +166,6 @@ func (sh *ServerHandler) DeleteBookmarkHandler(w http.ResponseWriter, r *http.Re
 	} else {
 		sh.renderTemplate(w, "bookmark/bookmark_confirm_delete", map[string]interface{}{
 			"Bookmark": bookmark,
-		})
-	}
-}
-
-func (sh *ServerHandler) SettingsHandler(w http.ResponseWriter, r *http.Request) {
-	user := getUserFromRequest(r)
-
-	if r.Method == "POST" {
-		var message string
-
-		oldPassword := r.FormValue("old_password")
-		newPassword := r.FormValue("new_password")
-		if oldPassword != "" && newPassword != "" {
-			if !core.CheckPasswordHash(oldPassword, user.Password) {
-				message = "Old password is incorrect!"
-			} else {
-				hashedPassword, err := core.HashPassword(r.FormValue("password"))
-				if err != nil {
-					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-					return
-				}
-				sh.DB.Model(&user).Update("Password", hashedPassword)
-				message = "Password updated!"
-			}
-		}
-
-		sh.renderTemplate(w, "settings", map[string]interface{}{
-			"Message": message,
-			"User":    user,
-		})
-	} else {
-		sh.renderTemplate(w, "settings", map[string]interface{}{
-			"User": user,
 		})
 	}
 }

@@ -16,7 +16,7 @@ var migrateCmd = &cli.Command{
 			logger.Fatal().Err(err).Msg("Error opening database")
 		}
 
-		err = db.AutoMigrate(&database.User{}, &database.Bookmark{}, &database.Tag{}, &database.Session{})
+		err = db.AutoMigrate(&database.Bookmark{}, &database.Tag{}, &database.Session{})
 		if err != nil {
 			logger.Fatal().Err(err).Msg("Error migrating database")
 		} else {

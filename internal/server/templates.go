@@ -11,8 +11,8 @@ import (
 
 func (sh *ServerHandler) prepareTemplates() (err error) {
 	funcMap := template.FuncMap{
-		"idIn":   core.IsIDInSlice,
-		"domain": core.GetDomainFromURL,
+		"stringIn": core.StringIn,
+		"domain":   core.GetDomainFromURL,
 	}
 
 	// `templates/**/*.html` doesn't pick up the files in the `templates/` directory

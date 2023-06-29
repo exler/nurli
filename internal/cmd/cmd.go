@@ -22,7 +22,7 @@ var Cmd = &cli.App{
 			Value:   "",
 		},
 	},
-	Commands: []*cli.Command{versionCmd, serveCmd, migrateCmd, userCmd, bookmarkCmd, tagCmd},
+	Commands: []*cli.Command{versionCmd, serveCmd, migrateCmd, bookmarkCmd, tagCmd, importCmd},
 	Before: func(cCtx *cli.Context) error {
 		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
 		return nil

@@ -27,14 +27,11 @@ var (
 			if err != nil {
 				return err
 			}
-			fmt.Print("User ID: ")
-			userID, _ := strconv.Atoi(GetUserInput())
 			fmt.Print("Name: ")
 			name := GetUserInput()
 
 			db.Create(&database.Tag{
-				Name:    name,
-				OwnerID: uint(userID),
+				Name: name,
 			})
 
 			fmt.Println("Tag created successfully")
@@ -60,9 +57,9 @@ var (
 				return nil
 			}
 
-			PrintListHeader("ID", "Owner ID", "Name")
+			PrintListHeader("ID", "Name")
 			for _, tag := range tags {
-				fmt.Printf("%d\t%d\t%s\n", tag.ID, tag.OwnerID, tag.Name)
+				fmt.Printf("%d\t%s\n", tag.ID, tag.Name)
 			}
 
 			return nil

@@ -4,21 +4,9 @@ import (
 	"time"
 )
 
-type User struct {
-	ID         uint   `gorm:"primaryKey"`
-	Username   string `gorm:"uniqueIndex"`
-	Password   string
-	DateJoined time.Time
-
-	Bookmarks []Bookmark `gorm:"foreignKey:OwnerID;"`
-	Tags      []Tag      `gorm:"foreignKey:OwnerID;"`
-}
-
 type Tag struct {
-	ID      uint   `gorm:"primaryKey"`
-	Name    string `gorm:"uniqueIndex:idx_tag_name"`
-	OwnerID uint   `gorm:"uniqueIndex:idx_tag_name"`
-	Owner   User
+	ID   uint   `gorm:"primaryKey"`
+	Name string `gorm:"uniqueIndex:idx_tag_name"`
 }
 
 type Bookmark struct {
@@ -27,8 +15,6 @@ type Bookmark struct {
 	Title       string
 	Description string
 	Tags        []Tag `gorm:"many2many:bookmark_tags;"`
-	OwnerID     uint  `gorm:"uniqueIndex:idx_bookmark_url"`
-	Owner       User
 	Read        bool
 	Favorite    bool
 	CreatedAt   time.Time
@@ -38,8 +24,6 @@ type Bookmark struct {
 type Session struct {
 	ID        uint   `gorm:"primaryKey"`
 	Token     string `gorm:"uniqueIndex:idx_session_token"`
-	UserID    uint
-	User      User
 	CreatedAt time.Time
 	ExpiresAt time.Time
 }

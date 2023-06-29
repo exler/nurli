@@ -12,7 +12,9 @@ import (
 )
 
 type ServerConfig struct {
-	ServerPort int
+	ServerPort        int
+	BasicAuthUsername string
+	BasicAuthPassword string
 }
 
 type ServerHandler struct {
@@ -35,23 +37,12 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 	fs := http.FileServer(http.Dir("./internal/static"))
 
 	router := chi.NewRouter()
-
+	router.Use(BasicAuthMiddleware("Nurli", config.BasicAuthUsername, config.BasicAuthPassword))
 	router.Handle("/static/*", http.StripPrefix("/static/", fs))
-
-	// Auth routes
-	router.Group(func(r chi.Router) {
-		r.Post("/login", sh.LoginHandler)
-		r.Get("/login", sh.LoginHandler)
-		r.Get("/logout", sh.LogoutHandler)
-	})
 
 	// UI routes
 	router.Route("/", func(r chi.Router) {
-		r.Use(sh.AuthMiddleware)
 		r.Get("/", sh.IndexHandler)
-
-		r.Get("/settings", sh.SettingsHandler)
-		r.Post("/settings", sh.SettingsHandler)
 
 		r.Get("/add", sh.AddBookmarkHandler)
 		r.Post("/add", sh.AddBookmarkHandler)
@@ -65,7 +56,6 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 
 	// API routes
 	router.Route("/api", func(r chi.Router) {
-		r.Use(sh.AuthMiddleware)
 		r.Get("/health", sh.HealthHandler)
 	})
 

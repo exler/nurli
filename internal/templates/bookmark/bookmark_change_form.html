@@ -20,7 +20,8 @@
                 <select multiple id="tags" name="tags[]" class="tags-select w-full hidden">
                     {{ $initialTags := .InitialTags }}
                     {{ range .Tags }}
-                    <option value="{{ .ID }}" {{ if idIn .ID $initialTags }}selected{{ end }}>{{ .Name }}</option>
+                    <option value="{{ .Name }}" {{ if stringIn .Name $initialTags }}selected{{ end }}>{{ .Name }}
+                    </option>
                     {{ end }}
                 </select>
             </div>
@@ -46,18 +47,6 @@
         $(".tags-select").select2({
             width: "100%",
             tags: true,
-            createTag: function (params) {
-                let term = $.trim(params.term);
-
-                if (term === "") {
-                    return null;
-                }
-
-                return {
-                    id: "NEW:" + term,
-                    text: term
-                };
-            }
         });
     });
 </script>

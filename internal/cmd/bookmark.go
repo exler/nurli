@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
 	"github.com/urfave/cli/v2"
 )
@@ -29,17 +30,21 @@ var (
 			if err != nil {
 				return err
 			}
-			fmt.Print("User ID: ")
-			userID, _ := strconv.Atoi(GetUserInput())
-			fmt.Print("URL: ")
-			url := GetUserInput()
-			fmt.Print("Title: ")
-			title := GetUserInput()
+
+			url := cCtx.Args().First()
+
+			page_html, err := core.GetPageHTML(url)
+			if err != nil {
+				return err
+			}
+
+			title := core.GetTitleFromHTML(page_html)
+			description := core.TrimString(core.GetDescriptionFromHTML(page_html), core.DESCRIPTION_TRIM_LENGTH)
 
 			db.Create(&database.Bookmark{
-				URL:     url,
-				Title:   title,
-				OwnerID: uint(userID),
+				URL:         url,
+				Title:       title,
+				Description: description,
 			})
 
 			return nil

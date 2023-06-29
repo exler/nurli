@@ -1,7 +1,9 @@
 package server
 
 import (
+	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
@@ -16,28 +18,48 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	noTagsFilter := queryParams.Get("no-tags")
 	tagFilter := queryParams.Get("tag")
 
-	var bookmarks []database.Bookmark
+	// Get pagination from query parameters
+	page := core.GetPageFromQueryParams(queryParams)
+	pageSize := core.GetPageSizeFromQueryParams(queryParams)
+
 	// Find all bookmarks and load tags for each bookmark taking into account the filters
+	// and the pagination.
+	var bookmarks []database.Bookmark
+	var count int64
+	modelScope := sh.DB.Model(&database.Bookmark{})
+	paginationScope := sh.DB.Scopes(database.Paginate(page, pageSize))
 	if readFilter != "" {
-		sh.DB.Preload("Tags").Where("read = ?", readFilter).Find(&bookmarks)
+		modelScope.Where("read = ?", readFilter).Count(&count)
+		paginationScope.Preload("Tags").Where("read = ?", readFilter).Find(&bookmarks)
 	} else if favoriteFilter != "" {
-		sh.DB.Preload("Tags").Where("favorite = ?", favoriteFilter).Find(&bookmarks)
+		modelScope.Where("favorite = ?", favoriteFilter).Count(&count)
+		paginationScope.Preload("Tags").Where("favorite = ?", favoriteFilter).Find(&bookmarks)
 	} else if noTagsFilter != "" {
-		sh.DB.Preload("Tags").Where("(SELECT COUNT(*) FROM bookmark_tags WHERE bookmark_id = bookmarks.id) = 0").Find(&bookmarks)
+		modelScope.Where("(SELECT COUNT(*) FROM bookmark_tags WHERE bookmark_id = bookmarks.id) = 0").Count(&count)
+		paginationScope.Preload("Tags").Where("(SELECT COUNT(*) FROM bookmark_tags WHERE bookmark_id = bookmarks.id) = 0").Find(&bookmarks)
 	} else if tagFilter != "" {
 		var tag database.Tag
 		sh.DB.Where("name = ?", tagFilter).First(&tag)
-		sh.DB.Preload("Tags").Where("? IN (SELECT tag_id FROM bookmark_tags WHERE bookmark_id = bookmarks.id)", tag.ID).Find(&bookmarks)
+		modelScope.Where("? IN (SELECT tag_id FROM bookmark_tags WHERE bookmark_id = bookmarks.id)", tag.ID).Count(&count)
+		paginationScope.Preload("Tags").Where("? IN (SELECT tag_id FROM bookmark_tags WHERE bookmark_id = bookmarks.id)", tag.ID).Find(&bookmarks)
 	} else {
-		sh.DB.Preload("Tags").Find(&bookmarks)
+		modelScope.Count(&count)
+		paginationScope.Preload("Tags").Find(&bookmarks)
 	}
 
 	var tags []database.Tag
 	sh.DB.Find(&tags)
 
+	// Calculate the number of pages
+	numberOfPages := int(math.Ceil(float64(count) / float64(pageSize)))
+
 	sh.renderTemplate(w, "bookmark/bookmark_list", map[string]interface{}{
-		"Bookmarks": bookmarks,
-		"Tags":      tags,
+		"Bookmarks":     bookmarks,
+		"Tags":          tags,
+		"CurrentPage":   page,
+		"NumberOfPages": numberOfPages,
+		"NextPageURL":   core.UpdateSingleParamInURL(r, "page", strconv.Itoa(page+1)),
+		"PrevPageURL":   core.UpdateSingleParamInURL(r, "page", strconv.Itoa(page-1)),
 	})
 }
 

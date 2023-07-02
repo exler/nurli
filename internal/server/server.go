@@ -37,7 +37,9 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 	fs := http.FileServer(http.Dir("./internal/static"))
 
 	router := chi.NewRouter()
-	router.Use(BasicAuthMiddleware("Nurli", config.BasicAuthUsername, config.BasicAuthPassword))
+	if config.BasicAuthUsername != "" && config.BasicAuthPassword != "" {
+		router.Use(BasicAuthMiddleware("Nurli", config.BasicAuthUsername, config.BasicAuthPassword))
+	}
 	router.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	// UI routes

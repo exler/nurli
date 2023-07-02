@@ -32,6 +32,13 @@ var serveCmd = &cli.Command{
 		},
 	},
 	Action: func(cCtx *cli.Context) error {
+		basicAuthUsername := cCtx.String("username")
+		basicAuthPassword := cCtx.String("password")
+
+		if basicAuthUsername == "" || basicAuthPassword == "" {
+			logger.Warn().Msg("Basic auth is disabled because username and/or password is empty")
+		}
+
 		db, err := openDatabase(cCtx)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("Error opening database")
@@ -41,8 +48,8 @@ var serveCmd = &cli.Command{
 
 		serverConfig := server.ServerConfig{
 			ServerPort:        port,
-			BasicAuthUsername: cCtx.String("username"),
-			BasicAuthPassword: cCtx.String("password"),
+			BasicAuthUsername: basicAuthUsername,
+			BasicAuthPassword: basicAuthPassword,
 		}
 
 		err = server.ServeApp(serverConfig, db, &logger)

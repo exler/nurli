@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/exler/nurli/internal"
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
@@ -34,13 +35,13 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 		logger.Fatal().Err(err).Msg("Error preparing templates")
 	}
 
-	fs := http.FileServer(http.Dir("./internal/static"))
+	fs := http.FileServer(http.FS(internal.StaticFS))
 
 	router := chi.NewRouter()
 	if config.BasicAuthUsername != "" && config.BasicAuthPassword != "" {
 		router.Use(BasicAuthMiddleware("Nurli", config.BasicAuthUsername, config.BasicAuthPassword))
 	}
-	router.Handle("/static/*", http.StripPrefix("/static/", fs))
+	router.Handle("/static/*", fs)
 
 	// UI routes
 	router.Route("/", func(r chi.Router) {

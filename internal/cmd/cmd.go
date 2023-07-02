@@ -21,10 +21,19 @@ var Cmd = &cli.App{
 			EnvVars: []string{"NURLI_DATA_DIR"},
 			Value:   "",
 		},
+		&cli.BoolFlag{
+			Name:    "debug",
+			EnvVars: []string{"NURLI_DEBUG"},
+			Value:   false,
+		},
 	},
 	Commands: []*cli.Command{versionCmd, serveCmd, migrateCmd, bookmarkCmd, tagCmd, importCmd},
 	Before: func(cCtx *cli.Context) error {
-		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+		if cCtx.Bool("debug") {
+			logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+		} else {
+			logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
+		}
 		return nil
 	},
 }

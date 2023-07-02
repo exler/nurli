@@ -19,6 +19,8 @@ WORKDIR /app
 COPY --from=build_go /nurli /app/nurli
 COPY --from=build_go /app/entrypoint.sh /app/entrypoint.sh
 
+EXPOSE 8000
+
 ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["serve"]

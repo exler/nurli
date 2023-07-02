@@ -14,7 +14,7 @@ var logger zerolog.Logger
 
 var Cmd = &cli.App{
 	Name:  "nurli",
-	Usage: "Efficient bookmark manager",
+	Usage: "Self-hosted and lightning-fast bookmark manager",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "data-dir",

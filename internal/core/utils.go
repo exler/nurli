@@ -4,24 +4,23 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	urllib "net/url"
 	"strconv"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
-func GetDomainFromURL(url string) string {
-	parsed_url, err := urllib.Parse(url)
+func GetDomainFromURL(urlToParse string) string {
+	parsedUrl, err := url.Parse(urlToParse)
 	if err != nil {
 		return ""
 	}
 
-	return strings.TrimPrefix(parsed_url.Hostname(), "www.")
+	return strings.TrimPrefix(parsedUrl.Hostname(), "www.")
 }
 
 func GetPageHTML(url string) (*html.Node, error) {
-	resp, err := http.Get(url)
+	resp, err := http.Get(url) // #nosec
 	if err != nil {
 		return nil, err
 	}

@@ -65,7 +65,11 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		r.ParseForm()
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 		url := r.FormValue("url")
 		read := r.FormValue("read") == "on"
 		favorite := r.FormValue("favorite") == "on"
@@ -111,7 +115,11 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 
 func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		r.ParseForm()
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 		url := r.FormValue("url")
 		read := r.FormValue("read") == "on"
 		favorite := r.FormValue("favorite") == "on"
@@ -154,7 +162,10 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 		})
 
 		// Update the tags
-		sh.DB.Model(&bookmark).Association("Tags").Replace(tagObjects)
+		if err := sh.DB.Model(&bookmark).Association("Tags").Replace(tagObjects); err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {

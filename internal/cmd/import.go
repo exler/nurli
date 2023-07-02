@@ -47,7 +47,7 @@ var (
 			}
 
 			// Open the CSV file
-			file, err := os.Open(filepath)
+			file, err := os.Open(filepath) // #nosec
 			if err != nil {
 				return err
 			}
@@ -59,7 +59,11 @@ var (
 			// Format: title, note, excerpt, url, tags, created, cover, highlights
 			reader := csv.NewReader(file)
 			// Skip the headers
-			reader.Read()
+			if _, err = reader.Read(); err != nil {
+				logger.Error().Err(err).Msg("failed to read first line")
+				return err
+			}
+
 			for {
 				// Read each record from csv
 				record, err := reader.Read()
@@ -68,6 +72,7 @@ var (
 						break
 					}
 					logger.Error().Err(err).Msg("failed to read record")
+					return err
 				}
 
 				// Parse the created date

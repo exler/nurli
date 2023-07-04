@@ -59,7 +59,12 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 
 	// API routes
 	router.Route("/api", func(r chi.Router) {
-		r.Get("/health", sh.HealthHandler)
+		r.Get("/health", sh.HealthAPIHandler)
+
+		r.Get("/url", sh.URLDetailAPIHandler)
+
+		r.Put("/bookmark", sh.SaveBookmarkAPIHandler)
+		r.Delete("/bookmark", sh.DeleteBookmarkAPIHandler)
 	})
 
 	srv := &http.Server{

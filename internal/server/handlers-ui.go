@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/exler/nurli/internal"
 	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
 	"github.com/go-chi/chi"
@@ -19,8 +20,8 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	tagFilter := queryParams.Get("tag")
 
 	// Get pagination from query parameters
-	page := core.GetPageFromQueryParams(queryParams)
-	pageSize := core.GetPageSizeFromQueryParams(queryParams)
+	page := GetPageFromQueryParams(queryParams)
+	pageSize := GetPageSizeFromQueryParams(queryParams)
 
 	// Find all bookmarks and load tags for each bookmark taking into account the filters
 	// and the pagination.
@@ -51,15 +52,27 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	sh.DB.Find(&tags)
 
 	// Calculate the number of pages
-	numberOfPages := int(math.Ceil(float64(count) / float64(pageSize)))
+	numberOfPages := int(math.Ceil(float64(count)/float64(pageSize))) | 1
+
+	nextPageURL := UpdateSingleParamInURL(r, "page", strconv.Itoa(page+1))
+	prevPageURL := UpdateSingleParamInURL(r, "page", strconv.Itoa(page-1))
+	if page > numberOfPages {
+		// Redirect to the last page if the current page is greater than the number of pages
+		http.Redirect(w, r, UpdateSingleParamInURL(r, "page", strconv.Itoa(numberOfPages)), http.StatusFound)
+		return
+	} else if page == 1 {
+		prevPageURL = ""
+	} else if page == numberOfPages {
+		nextPageURL = ""
+	}
 
 	sh.renderTemplate(w, "bookmark/bookmark_list", map[string]interface{}{
 		"Bookmarks":     bookmarks,
 		"Tags":          tags,
 		"CurrentPage":   page,
 		"NumberOfPages": numberOfPages,
-		"NextPageURL":   core.UpdateSingleParamInURL(r, "page", strconv.Itoa(page+1)),
-		"PrevPageURL":   core.UpdateSingleParamInURL(r, "page", strconv.Itoa(page-1)),
+		"NextPageURL":   nextPageURL,
+		"PrevPageURL":   prevPageURL,
 	})
 }
 
@@ -91,7 +104,7 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 		}
 
 		title := core.GetTitleFromHTML(page_html)
-		description := core.TrimString(core.GetDescriptionFromHTML(page_html), core.DESCRIPTION_TRIM_LENGTH)
+		description := core.TrimString(core.GetDescriptionFromHTML(page_html), internal.DESCRIPTION_TRIM_LENGTH)
 
 		bookmark := database.Bookmark{
 			URL:         url,
@@ -149,7 +162,7 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 
 		if url != bookmark.URL {
 			title = core.GetTitleFromHTML(page_html)
-			description = core.TrimString(core.GetDescriptionFromHTML(page_html), core.DESCRIPTION_TRIM_LENGTH)
+			description = core.TrimString(core.GetDescriptionFromHTML(page_html), internal.DESCRIPTION_TRIM_LENGTH)
 		}
 
 		// Update the bookmark as map because GORM only updates non-zero fields

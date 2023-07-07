@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/exler/nurli/internal"
 	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
 	"github.com/urfave/cli/v2"
@@ -39,7 +40,7 @@ var (
 			}
 
 			title := core.GetTitleFromHTML(page_html)
-			description := core.TrimString(core.GetDescriptionFromHTML(page_html), core.DESCRIPTION_TRIM_LENGTH)
+			description := core.TrimString(core.GetDescriptionFromHTML(page_html), internal.DESCRIPTION_TRIM_LENGTH)
 
 			db.Create(&database.Bookmark{
 				URL:         url,

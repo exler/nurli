@@ -95,16 +95,18 @@ var (
 				})
 
 				// Get or create the tags
-				tags := strings.Split(record[4], ",")
-				for _, tagName := range tags {
-					tagName = strings.TrimSpace(tagName)
-					tag := database.Tag{
-						Name: tagName,
+				if tags := record[4]; tags != "" {
+					tags := strings.Split(record[4], ",")
+					for _, tagName := range tags {
+						tagName = strings.TrimSpace(tagName)
+						tag := database.Tag{
+							Name: tagName,
+						}
+						db.FirstOrCreate(&tag, database.Tag{
+							Name: tagName,
+						})
+						bookmark.Tags = append(bookmark.Tags, tag)
 					}
-					db.FirstOrCreate(&tag, database.Tag{
-						Name: tagName,
-					})
-					bookmark.Tags = append(bookmark.Tags, tag)
 				}
 
 				// Save the bookmark

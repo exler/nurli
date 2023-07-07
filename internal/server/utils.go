@@ -15,9 +15,6 @@ func GetPageFromQueryParams(queryParams url.Values) int {
 		page = 1
 	} else {
 		page, _ = strconv.Atoi(pageParam)
-		if page <= 0 {
-			page = 1
-		}
 	}
 
 	return page

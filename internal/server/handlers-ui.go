@@ -56,12 +56,17 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 	nextPageURL := UpdateSingleParamInURL(r, "page", strconv.Itoa(page+1))
 	prevPageURL := UpdateSingleParamInURL(r, "page", strconv.Itoa(page-1))
+	if page < 1 {
+		http.Redirect(w, r, UpdateSingleParamInURL(r, "page", "1"), http.StatusFound)
+		return
+	} else if page == 1 {
+		prevPageURL = ""
+	}
+
 	if page > numberOfPages {
 		// Redirect to the last page if the current page is greater than the number of pages
 		http.Redirect(w, r, UpdateSingleParamInURL(r, "page", strconv.Itoa(numberOfPages)), http.StatusFound)
 		return
-	} else if page == 1 {
-		prevPageURL = ""
 	} else if page == numberOfPages {
 		nextPageURL = ""
 	}

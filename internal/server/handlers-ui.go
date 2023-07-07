@@ -28,7 +28,7 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	var bookmarks []database.Bookmark
 	var count int64
 	modelScope := sh.DB.Model(&database.Bookmark{})
-	paginationScope := sh.DB.Scopes(database.Paginate(page, pageSize))
+	paginationScope := sh.DB.Order("created_at DESC, id DESC").Scopes(database.Paginate(page, pageSize))
 	if readFilter != "" {
 		modelScope.Where("read = ?", readFilter).Count(&count)
 		paginationScope.Preload("Tags").Where("read = ?", readFilter).Find(&bookmarks)

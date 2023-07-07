@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/exler/nurli/internal"
 	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
 )
@@ -97,7 +98,7 @@ func (sh *ServerHandler) SaveBookmarkAPIHandler(w http.ResponseWriter, r *http.R
 		}
 
 		title := core.GetTitleFromHTML(page_html)
-		description := core.TrimString(core.GetDescriptionFromHTML(page_html), core.DESCRIPTION_TRIM_LENGTH)
+		description := core.TrimString(core.GetDescriptionFromHTML(page_html), internal.DESCRIPTION_TRIM_LENGTH)
 
 		bookmark := database.Bookmark{
 			URL:         requestData.URL,

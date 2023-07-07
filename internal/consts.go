@@ -1,4 +1,4 @@
-package core
+package internal
 
 const (
 	DESCRIPTION_TRIM_LENGTH = 255

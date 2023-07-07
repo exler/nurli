@@ -21,6 +21,7 @@ COPY --from=build_go /app/entrypoint.sh /app/entrypoint.sh
 
 EXPOSE 8000
 
+RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["serve"]

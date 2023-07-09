@@ -132,6 +132,14 @@ func (sh *ServerHandler) AddBookmarkHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Request) {
+	var bookmark database.Bookmark
+	sh.DB.Where("id = ?", chi.URLParam(r, "id")).Preload("Tags").First(&bookmark)
+
+	if bookmark.ID == 0 {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
 	if r.Method == "POST" {
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -142,10 +150,6 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 		read := r.FormValue("read") == "on"
 		favorite := r.FormValue("favorite") == "on"
 		tags := r.Form["tags[]"]
-
-		// Get the bookmark from the database
-		var bookmark database.Bookmark
-		sh.DB.Preload("Tags").Where("id = ?", chi.URLParam(r, "id")).First(&bookmark)
 
 		tagObjects := []database.Tag{}
 		for _, tag := range tags {
@@ -187,9 +191,6 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		var bookmark database.Bookmark
-		sh.DB.Where("id = ?", chi.URLParam(r, "id")).Preload("Tags").First(&bookmark)
-
 		var tags []database.Tag
 		sh.DB.Find(&tags)
 
@@ -209,6 +210,11 @@ func (sh *ServerHandler) EditBookmarkHandler(w http.ResponseWriter, r *http.Requ
 func (sh *ServerHandler) DeleteBookmarkHandler(w http.ResponseWriter, r *http.Request) {
 	var bookmark database.Bookmark
 	sh.DB.Where("id = ?", chi.URLParam(r, "id")).First(&bookmark)
+
+	if bookmark.ID == 0 {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
 
 	if r.Method == "POST" {
 		sh.DB.Delete(&bookmark)

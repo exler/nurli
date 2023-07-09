@@ -768,6 +768,11 @@ select {
   margin-right: auto;
 }
 
+.my-5 {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
 .mb-2 {
   margin-bottom: 0.5rem;
 }
@@ -776,8 +781,16 @@ select {
   margin-bottom: 1rem;
 }
 
+.mb-5 {
+  margin-bottom: 1.25rem;
+}
+
 .mt-1 {
   margin-top: 0.25rem;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
 }
 
 .mt-6 {
@@ -926,6 +939,11 @@ select {
   border-bottom-width: 2px;
 }
 
+.border-black {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 0 0 / var(--tw-border-opacity));
+}
+
 .border-gray-100 {
   --tw-border-opacity: 1;
   border-color: rgb(243 244 246 / var(--tw-border-opacity));
@@ -968,6 +986,11 @@ select {
 .px-2 {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+}
+
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 
 .py-1 {
@@ -1067,6 +1090,14 @@ body {
   background-color: #ff8906;
   -webkit-mask-image: url("/static/img/login-pattern.svg");
           mask-image: url("/static/img/login-pattern.svg");
+}
+
+.border-b-1 {
+  border-bottom-width: 1px;
+}
+
+.leading-1 {
+  line-height: 0.1rem;
 }
 
 :is([dir="rtl"] .rtl\:rotate-180) {

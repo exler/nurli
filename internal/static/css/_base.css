@@ -10,3 +10,11 @@ body {
     background-color: #ff8906;
     mask-image: url("/static/img/login-pattern.svg");
 }
+
+.border-b-1 {
+    border-bottom-width: 1px;
+}
+
+.leading-1 {
+    line-height: 0.1rem;
+}

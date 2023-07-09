@@ -1,14 +1,15 @@
 package database
 
 import (
-	"context"
-
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-func OpenDatabase(ctx context.Context, dbPath string) (db *gorm.DB, err error) {
-	db, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+func OpenDatabase(logger logger.Interface, dbPath string) (db *gorm.DB, err error) {
+	db, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+		Logger: logger,
+	})
 	if err != nil {
 		return nil, err
 	}

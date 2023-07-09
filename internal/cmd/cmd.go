@@ -1,16 +1,23 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
-	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-var logger zerolog.Logger
+type contextKey int
+
+const (
+	LoggerKey contextKey = iota
+)
 
 var Cmd = &cli.App{
 	Name:  "nurli",
@@ -29,11 +36,12 @@ var Cmd = &cli.App{
 	},
 	Commands: []*cli.Command{versionCmd, serveCmd, migrateCmd, bookmarkCmd, tagCmd, importCmd},
 	Before: func(cCtx *cli.Context) error {
-		if cCtx.Bool("debug") {
-			logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
-		} else {
-			logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
-		}
+		newLogger := core.NewZerologGORMLogger(cCtx.Bool("debug"), logger.Config{
+			SlowThreshold: time.Second,
+		})
+		newLogger.LogMode(logger.Info)
+		ctx := context.WithValue(cCtx.Context, LoggerKey, newLogger)
+		cCtx.Context = ctx
 		return nil
 	},
 }
@@ -52,6 +60,7 @@ func openDatabase(cCtx *cli.Context) (*gorm.DB, error) {
 		}
 	}
 	dbPath := filepath.Join(dataDir, "nurli.db")
-	db, err := database.OpenDatabase(cCtx.Context, dbPath)
+	logger := cCtx.Context.Value(LoggerKey).(*core.ZerologGORMLogger)
+	db, err := database.OpenDatabase(logger, dbPath)
 	return db, err
 }

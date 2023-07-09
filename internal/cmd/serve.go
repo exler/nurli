@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/server"
 	"github.com/urfave/cli/v2"
 )
@@ -32,16 +33,18 @@ var serveCmd = &cli.Command{
 		},
 	},
 	Action: func(cCtx *cli.Context) error {
+		logger := cCtx.Context.Value(LoggerKey).(*core.ZerologGORMLogger)
+
 		basicAuthUsername := cCtx.String("username")
 		basicAuthPassword := cCtx.String("password")
 
 		if basicAuthUsername == "" || basicAuthPassword == "" {
-			logger.Warn().Msg("Basic auth is disabled because username and/or password is empty")
+			logger.Warn(cCtx.Context, "Basic auth is disabled because username and/or password is empty")
 		}
 
 		db, err := openDatabase(cCtx)
 		if err != nil {
-			logger.Fatal().Err(err).Msg("Error opening database")
+			logger.Fatal(cCtx.Context, "Error opening database")
 		}
 
 		port := cCtx.Int("port")
@@ -52,9 +55,9 @@ var serveCmd = &cli.Command{
 			BasicAuthPassword: basicAuthPassword,
 		}
 
-		err = server.ServeApp(serverConfig, db, &logger)
+		err = server.ServeApp(serverConfig, db, logger)
 		if err != nil {
-			logger.Fatal().Err(err).Msg("Error running server")
+			logger.Fatal(cCtx.Context, "Error running server")
 		}
 
 		return nil

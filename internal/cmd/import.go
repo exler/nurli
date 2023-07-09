@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exler/nurli/internal/core"
 	"github.com/exler/nurli/internal/database"
 	"github.com/urfave/cli/v2"
 )
@@ -31,6 +32,8 @@ var (
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
+			logger := cCtx.Context.Value(LoggerKey).(*core.ZerologGORMLogger)
+
 			db, err := openDatabase(cCtx)
 			if err != nil {
 				return err
@@ -60,7 +63,7 @@ var (
 			reader := csv.NewReader(file)
 			// Skip the headers
 			if _, err = reader.Read(); err != nil {
-				logger.Error().Err(err).Msg("failed to read first line")
+				logger.Error(cCtx.Context, "Failed to read first line")
 				return err
 			}
 
@@ -71,7 +74,7 @@ var (
 					if err == io.EOF {
 						break
 					}
-					logger.Error().Err(err).Msg("failed to read record")
+					logger.Error(cCtx.Context, "Failed to read record")
 					return err
 				}
 
@@ -79,7 +82,7 @@ var (
 				// Format: 2023-06-20T07:20:45.310Z
 				createdAt, err := time.Parse("2006-01-02T15:04:05.000Z", record[5])
 				if err != nil {
-					logger.Error().Err(err).Msg("failed to parse created date")
+					logger.Error(cCtx.Context, "Failed to parse created date")
 				}
 
 				// Get or create the bookmark
@@ -115,7 +118,7 @@ var (
 				createdRecords++
 			}
 
-			logger.Info().Msgf("Imported %d records", createdRecords)
+			logger.Info(cCtx.Context, "Imported %d records", createdRecords)
 
 			return nil
 		},

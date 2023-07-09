@@ -1,14 +1,15 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
 	"time"
 
 	"github.com/exler/nurli/internal"
+	"github.com/exler/nurli/internal/core"
 	"github.com/go-chi/chi"
-	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
@@ -20,19 +21,21 @@ type ServerConfig struct {
 
 type ServerHandler struct {
 	DB     *gorm.DB
-	Logger *zerolog.Logger
+	Logger *core.ZerologGORMLogger
 
 	templates *template.Template
 }
 
-func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
+func ServeApp(config ServerConfig, db *gorm.DB, logger *core.ZerologGORMLogger) error {
+	ctx := context.Background()
+
 	sh := ServerHandler{
 		DB:     db,
 		Logger: logger,
 	}
 	err := sh.prepareTemplates()
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Error preparing templates")
+		logger.Fatal(ctx, "Error preparing templates")
 	}
 
 	fs := http.FileServer(http.FS(internal.StaticFS))
@@ -75,7 +78,7 @@ func ServeApp(config ServerConfig, db *gorm.DB, logger *zerolog.Logger) error {
 		Handler:      router,
 	}
 
-	logger.Info().Msgf("Listening on port %d", config.ServerPort)
+	logger.Info(ctx, "Listening on port %d", config.ServerPort)
 
 	return srv.ListenAndServe()
 }

@@ -52,7 +52,10 @@ func (sh *ServerHandler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	sh.DB.Find(&tags)
 
 	// Calculate the number of pages
-	numberOfPages := int(math.Ceil(float64(count)/float64(pageSize))) | 1
+	numberOfPages := int(math.Ceil(float64(count) / float64(pageSize)))
+	if numberOfPages == 0 {
+		numberOfPages = 1
+	}
 
 	nextPageURL := UpdateSingleParamInURL(r, "page", strconv.Itoa(page+1))
 	prevPageURL := UpdateSingleParamInURL(r, "page", strconv.Itoa(page-1))
